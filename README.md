@@ -1,6 +1,7 @@
 # RSQLServer
 
 [![Travis-CI Build Status](https://travis-ci.org/imanuelcostigan/RSQLServer.svg?branch=master)](https://travis-ci.org/imanuelcostigan/RSQLServer)
+[![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/imanuelcostigan/RSQLServer?branch=master&svg=true)](https://ci.appveyor.com/project/imanuelcostigan/RSQLServer)
 
 An R package that provides a SQL Server R Database Interface ([DBI](https://github.com/rstats-db/DBI)), based on the cross-platform [jTDS JDBC driver](http://jtds.sourceforge.net/index.html).
 
