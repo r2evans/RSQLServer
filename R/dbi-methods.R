@@ -19,11 +19,7 @@ NULL
 #' @export
 
 SQLServer <- function () {
-  rJava::.jaddClassPath(jtds_class_path())
-  drv <- rJava::.jnew("net.sourceforge.jtds.jdbc.Driver", check = FALSE)
-  rJava::.jcheck(TRUE)
-  if (rJava::is.jnull(drv)) drv <- rJava::.jnull()
-  new("SQLServerDriver", jdrv = drv)
+  new("SQLServerDriver", jdrv = start_driver())
 }
 
 
@@ -82,9 +78,7 @@ setMethod('dbConnect', "SQLServerDriver",
       properties <- sd
     }
     url <- jtds_url(server, type, port, database, properties)
-    jc <- rJava::.jcall(drv@jdrv, "Ljava/sql/Connection;", "connect", url,
-      rJava::.jnew('java/util/Properties'))
-    new("SQLServerConnection", jc = jc)
+    new("SQLServerConnection", jc = new_connection(drv, url))
   }
 )
 
@@ -97,7 +91,7 @@ setMethod('dbGetInfo', 'SQLServerDriver', definition = function (dbObj, ...) {
     # getDriverVersion() method of the JtdsDatabaseMetaData class. But
     # this method isn't defined for Driver class - so hard coded.
     driver.version = numeric_version("3.0"),
-    client.version = rJava::.jcall(dbObj@jdrv, "S", "getVersion"),
+    client.version = driver_version(dbObj),
     # Max connection defined server side rather than by driver.
     max.connections = NA)
 })
@@ -123,12 +117,11 @@ setMethod("dbIsValid", "SQLServerDriver", function(dbObj, ...) TRUE)
 setMethod('dbGetInfo', 'SQLServerConnection',
   definition = function (dbObj, ...) {
     list(
-      username = rJava::.jfield(dbObj@jc, "S", "user"),
-      host = rJava::.jfield(dbObj@jc, "S", "serverName"),
-      port = rJava::.jfield(dbObj@jc, "I", "portNumber"),
-      dbname = rJava::.jfield(dbObj@jc, "S", "currentDatabase"),
-      db.version = numeric_version(
-        rJava::.jfield(dbObj@jc, "S", "databaseProductVersion"))
+      username   = connection_info(dbObj, "username"),
+      host       = connection_info(dbObj, "host"),
+      port       = connection_info(dbObj, "port"),
+      dbname     = connection_info(dbObj, "dbname"),
+      db.version = connection_info(dbObj, "db.version")
     )
   }
 )
@@ -144,11 +137,11 @@ setMethod('dbIsValid', 'SQLServerConnection', function (dbObj, ...) {
 #' @export
 
 setMethod("dbDisconnect", "SQLServerConnection", function (conn, ...) {
-  if (rJava::.jcall(conn@jc, "Z", "isClosed"))  {
+  if (!dbIsValid(conn))  {
     warning("The connection has already been closed")
     FALSE
   } else {
-    rJava::.jcall(conn@jc, "V", "close")
+    close_connection(conn)
     TRUE
   }
 })
@@ -166,10 +159,9 @@ setMethod("dbSendQuery", c("SQLServerConnection", "character"),
     # to return ResultSet objects. To execute data definition or manipulation
     # commands such as CREATE TABLE or UPDATE, use dbExecute instead.
     assertthat::assert_that(assertthat::is.string(statement))
-    stat <- rJava::.jcall(conn@jc, "Ljava/sql/Statement;", "createStatement")
+    stat <- create_statement(conn)
     jdbc_exception(stat, "Unable to create simple JDBC statement ", statement)
-    jr <- rJava::.jcall(stat, "Ljava/sql/ResultSet;", "executeQuery",
-      statement, check = FALSE)
+    jr <- execute(stat, statement)
     jdbc_exception(jr, "Unable to retrieve JDBC result set for ", statement)
     md <- rJava::.jcall(jr, "Ljava/sql/ResultSetMetaData;", "getMetaData",
       check = FALSE)
@@ -191,7 +183,7 @@ setMethod("dbExecute", c("SQLServerConnection", "character"),
     if (length(list(...)) || length(list)) {
       stat <- rJava::.jcall(conn@jc, "Ljava/sql/PreparedStatement;",
         "prepareStatement", statement, check = FALSE)
-      on.exit(rJava::.jcall(stat, "V", "close"))
+      on.exit(close_statement(stat))
       jdbc_exception(stat, "Unable to execute JDBC prepared statement ",
         statement)
       # this will fix issue #4 and http://stackoverflow.com/q/21603660/2161065
@@ -521,7 +513,7 @@ setMethod("dbHasCompleted", "SQLServerResult", def = function (res, ...) {
 setMethod("dbClearResult", "SQLServerResult", function (res, ...) {
   # Need to overwrite RJDBC supplied method to pass DBItest. Needs to throw
   # warning if calling this method on cleared resultset
-  if (rJava::.jcall(res@jr, "Z", "isClosed")) {
+  if (dbIsValid(res)) {
     warning("ResultSet has already been cleared", call. = FALSE)
   } else {
     rJava::.jcall(res@jr, "V", "close")
@@ -529,7 +521,7 @@ setMethod("dbClearResult", "SQLServerResult", function (res, ...) {
   if (rJava::.jcall(res@stat, "Z", "isClosed")) {
     warning("Statement has already been cleared", call. = FALSE)
   } else {
-    rJava::.jcall(res@stat, "V", "close")
+    close_statement(res@stat)
   }
   TRUE
 })
