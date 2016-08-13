@@ -513,7 +513,7 @@ setMethod("dbHasCompleted", "SQLServerResult", def = function (res, ...) {
 setMethod("dbClearResult", "SQLServerResult", function (res, ...) {
   # Need to overwrite RJDBC supplied method to pass DBItest. Needs to throw
   # warning if calling this method on cleared resultset
-  if (dbIsValid(res)) {
+  if (!dbIsValid(res)) {
     warning("ResultSet has already been cleared", call. = FALSE)
   } else {
     rJava::.jcall(res@jr, "V", "close")
