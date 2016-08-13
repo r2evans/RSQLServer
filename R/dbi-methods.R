@@ -161,7 +161,7 @@ setMethod("dbSendQuery", c("SQLServerConnection", "character"),
     assertthat::assert_that(assertthat::is.string(statement))
     stat <- create_statement(conn)
     jdbc_exception(stat, "Unable to create simple JDBC statement ", statement)
-    jr <- execute(stat, statement)
+    jr <- execute_query(stat, statement)
     jdbc_exception(jr, "Unable to retrieve JDBC result set for ", statement)
     md <- rJava::.jcall(jr, "Ljava/sql/ResultSetMetaData;", "getMetaData",
       check = FALSE)
@@ -193,14 +193,14 @@ setMethod("dbExecute", c("SQLServerConnection", "character"),
       if (!is.null(list)) {
         .fillStatementParameters(stat, list)
       }
-      res <- rJava::.jcall(stat, "I", "executeUpdate", check = FALSE)
+      res <- execute_update(stat)
     } else {
       stat <- rJava::.jcall(conn@jc, "Ljava/sql/Statement;", "createStatement")
       on.exit(rJava::.jcall(stat, "V", "close"))
       jdbc_exception(stat, "Unable to create JDBC statement ", statement)
       # In theory following is not necesary since 'stat' will go away and be
       # collected, but apparently it may be too late for Oracle (ORA-01000)
-      res <- rJava::.jcall(stat, "I", "executeUpdate", statement, check = FALSE)
+      res <- execute_update(stat, statement)
     }
     x <- rJava::.jgetEx(TRUE)
     if (!rJava::is.jnull(x)) {
