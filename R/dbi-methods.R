@@ -160,12 +160,11 @@ setMethod("dbSendQuery", c("SQLServerConnection", "character"),
     # commands such as CREATE TABLE or UPDATE, use dbExecute instead.
     assertthat::assert_that(assertthat::is.string(statement))
     stat <- create_statement(conn)
-    jdbc_exception(stat, "Unable to create simple JDBC statement ", statement)
+    catch_exception(stat, "Unable to create simple JDBC statement ", statement)
     jr <- execute_query(stat, statement)
-    jdbc_exception(jr, "Unable to retrieve JDBC result set for ", statement)
-    md <- rJava::.jcall(jr, "Ljava/sql/ResultSetMetaData;", "getMetaData",
-      check = FALSE)
-    jdbc_exception(md, "Unable to retrieve JDBC result set meta data for ",
+    catch_exception(jr, "Unable to retrieve JDBC result set for ", statement)
+    md <- res_metadata(jr, FALSE)
+    catch_exception(md, "Unable to retrieve JDBC result set meta data for ",
       statement, " in dbSendQuery")
     new("SQLServerResult", jr = jr, md = md, stat = stat, pull = rJava::.jnull())
 })
@@ -181,10 +180,9 @@ setMethod("dbExecute", c("SQLServerConnection", "character"),
     # procedures that do not return results.
     assertthat::assert_that(assertthat::is.string(statement))
     if (length(list(...)) || length(list)) {
-      stat <- rJava::.jcall(conn@jc, "Ljava/sql/PreparedStatement;",
-        "prepareStatement", statement, check = FALSE)
+      stat <- create_prepared_statement(conn, statement)
       on.exit(close_statement(stat))
-      jdbc_exception(stat, "Unable to execute JDBC prepared statement ",
+      catch_exception(stat, "Unable to execute JDBC prepared statement ",
         statement)
       # this will fix issue #4 and http://stackoverflow.com/q/21603660/2161065
       if (length(list(...))) {
@@ -197,7 +195,7 @@ setMethod("dbExecute", c("SQLServerConnection", "character"),
     } else {
       stat <- rJava::.jcall(conn@jc, "Ljava/sql/Statement;", "createStatement")
       on.exit(rJava::.jcall(stat, "V", "close"))
-      jdbc_exception(stat, "Unable to create JDBC statement ", statement)
+      catch_exception(stat, "Unable to create JDBC statement ", statement)
       # In theory following is not necesary since 'stat' will go away and be
       # collected, but apparently it may be too late for Oracle (ORA-01000)
       res <- execute_update(stat, statement)
@@ -261,13 +259,13 @@ setMethod("dbListTables", "SQLServerConnection",
   # https://github.com/s-u/RJDBC/blob/1b7ccd4677ea49a93d909d476acf34330275b9ad/R/class.R#L161
   md <- rJava::.jcall(conn@jc, "Ljava/sql/DatabaseMetaData;", "getMetaData",
     check = FALSE)
-  jdbc_exception(md, "Unable to retrieve JDBC database metadata")
+  catch_exception(md, "Unable to retrieve JDBC database metadata")
   # Create arguments for call to getTables
   jns <- rJava::.jnull("java/lang/String")
   table_types <- rJava::.jarray(c("TABLE", "VIEW"))
   rs <- rJava::.jcall(md, "Ljava/sql/ResultSet;", "getTables",
     jns, jns, pattern, table_types, check = FALSE)
-  jdbc_exception(rs, "Unable to retrieve JDBC tables list")
+  catch_exception(rs, "Unable to retrieve JDBC tables list")
   on.exit(rJava::.jcall(rs, "V", "close"))
   tbls <- character()
   while (rJava::.jcall(rs, "Z", "next")) {
@@ -428,7 +426,7 @@ setMethod("fetch", c("SQLServerResult", "numeric"),
     if (rJava::is.jnull(rp)) {
       rp <- rJava::.jnew("com/github/RSQLServer/MSSQLResultPull",
         rJava::.jcast(res@jr, "java/sql/ResultSet"))
-      jdbc_exception(rp, "cannot instantiate MSSQLResultPull helper class")
+      catch_exception(rp, "cannot instantiate MSSQLResultPull helper class")
     }
 
     ###### Build list that will store data and be coerced into data frame
@@ -593,17 +591,5 @@ setMethod("dbHasCompleted", "SQLServerResult", function(res, ...) {
     } else {
       rJava::.jcall(s, "V", "setString", i, as.character(v)[1])
     }
-  }
-}
-
-jdbc_exception <- function (object, ...) {
-  # Based on RJDBC .verify.JDBC.result()
-  # https://github.com/s-u/RJDBC/blob/1b7ccd4677ea49a93d909d476acf34330275b9ad/R/class.R#L18
-  if (rJava::is.jnull(object)) {
-    x <- rJava::.jgetEx(TRUE)
-    if (rJava::is.jnull(x))
-      stop(..., call. = FALSE)
-    else
-      stop(..., ": ", rJava::.jcall(x, "S", "getMessage"), call. = FALSE)
   }
 }
