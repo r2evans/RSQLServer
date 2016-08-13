@@ -96,12 +96,12 @@ setMethod('dbGetInfo', 'SQLServerDriver', definition = function (dbObj, ...) {
     max.connections = NA)
 })
 
-#' @export
 #' @rdname SQLServerDriver-class
+#' @export
 setMethod("dbUnloadDriver", "SQLServerDriver", function(drv, ...) TRUE)
 
-#' @export
 #' @rdname SQLServerDriver-class
+#' @export
 setMethod("dbIsValid", "SQLServerDriver", function(dbObj, ...) TRUE)
 
 
