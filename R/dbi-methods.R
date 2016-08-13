@@ -106,6 +106,11 @@ setMethod('dbGetInfo', 'SQLServerDriver', definition = function (dbObj, ...) {
 #' @rdname SQLServerDriver-class
 setMethod("dbUnloadDriver", "SQLServerDriver", function(drv, ...) TRUE)
 
+#' @export
+#' @rdname SQLServerDriver-class
+setMethod("dbIsValid", "SQLServerDriver", function(dbObj, ...) TRUE)
+
+
 # DBI methods inherited from DBI
 # dbDriver()
 # show()
