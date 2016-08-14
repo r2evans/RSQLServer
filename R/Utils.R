@@ -180,68 +180,71 @@ rp_to_r_type_map <- function (ctypes) {
 
 # Bindings ----------------------------------------------------------------
 
+rs_bind <- function(i, param, rs) {
+  ps_bind(i, param, rs@stat)
+}
 
-rs_bind <- function(i, param, res) {
+ps_bind <- function(i, param, ps) {
   if (is.na(param)) {
-    rs_bind_null(i, param, res)
+    ps_bind_null(i, param, ps)
   } else if (is.integer(param)) {
-    rs_bind_int(i, param, res)
+    ps_bind_int(i, param, ps)
   } else if (is.numeric(param)) {
-    rs_bind_dbl(i, param, res)
+    ps_bind_dbl(i, param, ps)
   } else if (is.logical(param)) {
-    rs_bind_bln(i, param, res)
+    ps_bind_bln(i, param, ps)
   } else if (inherits(param, "Date")) {
-    rs_bind_dte(i, param, res)
+    ps_bind_dte(i, param, ps)
   } else if (inherits(param, "POSIXct")) {
-    rs_bind_tme(i, param, res)
+    ps_bind_tme(i, param, ps)
   } else if (is.raw(v)) {
-    rs_bind_raw(i, param, res)
+    ps_bind_raw(i, param, ps)
   } else {
-    rs_bind_str(i, param, res)
+    ps_bind_str(i, param, ps)
   }
 }
 
-rs_bind_null <- function(i, param, res) {
-  rJava::.jcall(res@stat, "V", "setNull", i,
+ps_bind_null <- function(i, param, ps) {
+  rJava::.jcall(ps, "V", "setNull", i,
     as.integer(rToJdbcType(class(param))))
 }
 
-rs_bind_int <- function(i, param, res) {
-  rJava::.jcall(res@stat, "V", "setInt", i, param)
+ps_bind_int <- function(i, param, ps) {
+  rJava::.jcall(ps, "V", "setInt", i, param)
 }
 
-rs_bind_dbl <- function(i, param, res) {
-  rJava::.jcall(res@stat, "V", "setDouble", i, param)
+ps_bind_dbl <- function(i, param, ps) {
+  rJava::.jcall(ps, "V", "setDouble", i, param)
 }
 
-rs_bind_bln <- function(i, param, res) {
-  rJava::.jcall(res@stat, "V", "setBoolean", i, param)
+ps_bind_bln <- function(i, param, ps) {
+  rJava::.jcall(ps, "V", "setBoolean", i, param)
 }
 
-rs_bind_dte <- function(i, param, res) {
+ps_bind_dte <- function(i, param, ps) {
   # as.POSIXlt sets time to midnight UTC whereas as.POSIXct sets time to
   # local timezone. The tz argument is ignored when a Date is passed to
   # either function
   ms <- as.numeric(as.POSIXlt(param)) * 1000
-  rJava::.jcall(res@stat, "V", "setDate", i,
+  rJava::.jcall(ps, "V", "setDate", i,
     rJava::.jnew("java/sql/Date", rJava::.jlong(ms)))
 }
 
-rs_bind_tme <- function(i, param, res) {
+ps_bind_tme <- function(i, param, ps) {
   # as.integer converts POSIXct to seconds since epoch. Timestamp
   # constructor needs milliseconds so multiply by 1000
   # http://docs.oracle.com/javase/7/docs/api/java/sql/Timestamp.html
   ms <- as.numeric(param) * 1000
-  rJava::.jcall(res@stat, "V", "setTimestamp", i,
+  rJava::.jcall(ps, "V", "setTimestamp", i,
     rJava::.jnew("java/sql/Timestamp", rJava::.jlong(ms)))
 }
 
-rs_bind_raw <- function(i, param, res) {
-  rJava::.jcall(res@stat, "V", "setByte", i, rJava::.jbyte(as.raw(param)))
+ps_bind_raw <- function(i, param, ps) {
+  rJava::.jcall(ps, "V", "setByte", i, rJava::.jbyte(as.raw(param)))
 }
 
-rs_bind_str <- function(i, param, res) {
-  rJava::.jcall(res@stat, "V", "setString", i, as.character(param))
+ps_bind_str <- function(i, param, ps) {
+  rJava::.jcall(ps, "V", "setString", i, as.character(param))
 }
 
 # SQL types --------------------------------------------------------------
