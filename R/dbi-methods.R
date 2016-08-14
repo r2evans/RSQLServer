@@ -181,7 +181,8 @@ setMethod("dbSendStatement", c("SQLServerConnection", "character"),
     catch_exception(res, "Unable to execute update ", statement)
     # Need to return a DBIResult rather than integer which is what JDBC's
     # executeUpdate method returns
-    dbSendQuery(conn, paste("SELECT", res, "AS ROW_AFFECTED"))
+    new("SQLServerUpdateResult",
+      dbSendQuery(conn, paste("SELECT", res, "AS ROWS_AFFECTED")))
 })
 
 #' @rdname SQLServerConnection-class
@@ -555,6 +556,12 @@ setMethod("dbGetRowCount", "SQLServerResult", function(res, ...) {
 #' @export
 setMethod("dbGetRowsAffected", "SQLServerResult", function(res, ...) {
   rJava::.jcall(res@jr, "I", "getFetchSize")
+})
+
+#' @rdname SQLServerResult-class
+#' @export
+setMethod("dbGetRowsAffected", "SQLServerUpdateResult", function(res, ...) {
+  fetch(res, -1)$ROWS_AFFECTED
 })
 
 #' @rdname SQLServerResult-class

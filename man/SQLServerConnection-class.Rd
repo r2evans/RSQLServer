@@ -16,6 +16,7 @@
 \alias{dbRemoveTable,SQLServerConnection-method}
 \alias{dbRollback,SQLServerConnection-method}
 \alias{dbSendQuery,SQLServerConnection,character-method}
+\alias{dbSendStatement,SQLServerConnection,character-method}
 \alias{dbSendUpdate}
 \alias{dbWriteTable,SQLServerConnection-method}
 \alias{sqlCreateTable,SQLServerConnection-method}
@@ -28,6 +29,9 @@
 \S4method{dbDisconnect}{SQLServerConnection}(conn, ...)
 
 \S4method{dbSendQuery}{SQLServerConnection,character}(conn, statement, ...)
+
+\S4method{dbSendStatement}{SQLServerConnection,character}(conn, statement,
+  params = NULL, ...)
 
 \S4method{dbExecute}{SQLServerConnection,character}(conn, statement, ...,
   list = NULL)

@@ -24,7 +24,14 @@ setClass("SQLServerConnection", contains = 'DBIConnection',
 
 # Result -----------------------------------------------------------------
 
-#' SQL Server Result class
+#' SQL Server Result classes
+#'
+#' The \code{SQLServerResult} class extends the \code{DBIResult} class, while
+#' the \code{SQLServerUpdateResult} class extends the \code{SQLServerResult}
+#' class. The latter is created by a called to \code{dbSendStatement} as the
+#' JDBC API does not return a ResultSet but rather an integer value. The
+#' \code{dbGetRowsAffected} called on \code{SQLServerUpdateResult} returns the
+#' value produced by the JDBC API.
 #'
 #' @keywords internal
 #' @export
@@ -32,4 +39,7 @@ setClass("SQLServerConnection", contains = 'DBIConnection',
 setClass ("SQLServerResult", contains = 'DBIResult',
   slots = c(jr = "jobjRef", md = "jobjRef", stat = "jobjRef", pull = "jobjRef"))
 
-
+#' @keywords internal
+#' @rdname SQLServerResult-class
+#' @export
+setClass ("SQLServerUpdateResult", contains = 'SQLServerResult')

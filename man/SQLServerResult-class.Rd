@@ -3,16 +3,18 @@
 \docType{class}
 \name{SQLServerResult-class}
 \alias{SQLServerResult-class}
+\alias{SQLServerUpdateResult-class}
 \alias{dbClearResult,SQLServerResult-method}
 \alias{dbColumnInfo,SQLServerResult-method}
 \alias{dbFetch,SQLServerResult,numeric-method}
 \alias{dbGetRowCount,SQLServerResult-method}
 \alias{dbGetRowsAffected,SQLServerResult-method}
+\alias{dbGetRowsAffected,SQLServerUpdateResult-method}
 \alias{dbGetStatement,SQLServerResult-method}
 \alias{dbHasCompleted,SQLServerResult-method}
 \alias{dbIsValid,SQLServerResult-method}
 \alias{fetch,SQLServerResult,numeric-method}
-\title{SQL Server Result class}
+\title{SQL Server Result classes}
 \usage{
 \S4method{dbIsValid}{SQLServerResult}(dbObj)
 
@@ -32,10 +34,17 @@
 
 \S4method{dbGetRowsAffected}{SQLServerResult}(res, ...)
 
+\S4method{dbGetRowsAffected}{SQLServerUpdateResult}(res, ...)
+
 \S4method{dbHasCompleted}{SQLServerResult}(res, ...)
 }
 \description{
-SQL Server Result class
+The \code{SQLServerResult} class extends the \code{DBIResult} class, while
+the \code{SQLServerUpdateResult} class extends the \code{SQLServerResult}
+class. The latter is created by a called to \code{dbSendStatement} as the
+JDBC API does not return a ResultSet but rather an integer value. The
+\code{dbGetRowsAffected} called on \code{SQLServerUpdateResult} returns the
+value produced by the JDBC API.
 }
 \keyword{internal}
 
