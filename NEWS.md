@@ -42,6 +42,8 @@ SQL Server (#75)
 
 - Implemented `dbBegin()`, `dbCommit()`, `dbRollback()` methods and use these in `dbWriteTable()`
 - `dbWriteTable()` now fails when attempting to append to a temporary table (#75)
+- Implemented `dbSendStatement()` method which required the extension of `SQLServerResult` to `SQLServerUpdateResult` the latter of which is used to dispatch the `dbGetRowsAffected()` method. (#95)
+- Implemented `dbBind()` method to replace the internal `.fillStatementParameter()` method. (#88)
 - Implemented `sqlCreateTable()` for `SQLServerConnection` which is called by `db_create_table()`. (#76)
 - `dbDataType` maps R character objects of sufficiently long length to `VARCHAR(MAX)` on newer version of MSSQL rather than `TEXT` as the latter is being deprecated.
 - Arguments of `dbConnect()` are now `NULL` where other default values were assigned. This does not change the behaviour of the method.
