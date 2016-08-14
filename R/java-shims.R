@@ -40,9 +40,15 @@ close_statement <- function(statement, check = TRUE) {
   rJava::.jcall(statement, "V", "close", check = check)
 }
 
-execute_query <- function(statement, string, check = FALSE) {
-  rJava::.jcall(statement, "Ljava/sql/ResultSet;", "executeQuery",
-    string, check = check)
+execute_query <- function(statement, string = NULL, check = FALSE) {
+  if (is.null(string)) {
+    # A prepared statement
+    rJava::.jcall(statement, "Ljava/sql/ResultSet;", "executeQuery",
+      check = check)
+  } else {
+    rJava::.jcall(statement, "Ljava/sql/ResultSet;", "executeQuery",
+      string, check = check)
+  }
 }
 
 execute_update <- function(statement, string = NULL, check = FALSE) {
