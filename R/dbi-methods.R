@@ -163,7 +163,7 @@ setMethod("dbSendQuery", c("SQLServerConnection", "character"),
     catch_exception(stat, "Unable to create simple JDBC statement ", statement)
     jr <- execute_query(stat, statement)
     catch_exception(jr, "Unable to retrieve JDBC result set for ", statement)
-    md <- res_metadata(jr, FALSE)
+    md <- rs_metadata(jr, FALSE)
     catch_exception(md, "Unable to retrieve JDBC result set meta data for ",
       statement, " in dbSendQuery")
     new("SQLServerResult", jr = jr, md = md, stat = stat, pull = rJava::.jnull())
