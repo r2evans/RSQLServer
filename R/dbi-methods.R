@@ -576,7 +576,7 @@ setMethod("dbHasCompleted", "SQLServerResult", function(res, ...) {
 #' @rdname SQLServerResult-class
 #' @export
 setMethod("dbBind", "SQLServerResult", function(res, params, ...) {
-  purrr::walk2(params, seq_along(params), rs_bind, res)
+  purrr::walk2(seq_along(params), params, rs_bind, res)
 })
 
 # Inherited from DBI:
