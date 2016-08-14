@@ -576,12 +576,7 @@ setMethod("dbHasCompleted", "SQLServerResult", function(res, ...) {
 #' @rdname SQLServerResult-class
 #' @export
 setMethod("dbBind", "SQLServerResult", function(res, params, ...) {
-  for (param in params) {
-    if (is.na(param)) {
-      sqlType <- rToJdbcType(class(param))
-      rJava::.jcall(s, "V", "setNull", i, as.integer(sqlType))
-    }
-  }
+  purrr::walk2(params, seq_along(params), rs_bind, res)
 })
 
 # Inherited from DBI:
