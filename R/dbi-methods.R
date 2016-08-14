@@ -172,6 +172,19 @@ setMethod("dbSendQuery", c("SQLServerConnection", "character"),
 #' @rdname SQLServerConnection-class
 #' @export
 
+setMethod("dbSendStatement", c("SQLServerConnection", "character"),
+  function(conn, statement, params = NULL, ...) {
+    assertthat::assert_that(assertthat::is.string(statement))
+    stat <- create_prepared_statement(conn, statement)
+    catch_exception(stat, "Unable to create prepared statement ", statement)
+    res <- execute_update(stat)
+    catch_exception(res, "Unable to execute update ", statement)
+    dbSendQuery(conn, paste("SELECT", res, "AS ROW_AFFECTED"))
+})
+
+#' @rdname SQLServerConnection-class
+#' @export
+
 setMethod("dbExecute", c("SQLServerConnection", "character"),
   def = function (conn, statement, ..., list = NULL) {
     # Modified from RJDBC
