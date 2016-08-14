@@ -573,6 +573,17 @@ setMethod("dbHasCompleted", "SQLServerResult", function(res, ...) {
   rJava::.jcall(res@jr, "Z", "isAfterLast") || dbGetRowCount(res) == 0L
 })
 
+#' @rdname SQLServerResult-class
+#' @export
+setMethod("dbBind", "SQLServerResult", function(res, params, ...) {
+  for (param in params) {
+    if (is.na(param)) {
+      sqlType <- rToJdbcType(class(param))
+      rJava::.jcall(s, "V", "setNull", i, as.integer(sqlType))
+    }
+  }
+})
+
 # Inherited from DBI:
 # show()
 # dbGetInfo()
