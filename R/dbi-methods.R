@@ -150,7 +150,7 @@ setMethod("dbDisconnect", "SQLServerConnection", function (conn, ...) {
 #' @export
 
 setMethod("dbSendQuery", c("SQLServerConnection", "character"),
-  def = function (conn, statement, ...) {
+  def = function (conn, statement, params = NULL, ...) {
     # Notes:
     # 1. Unlike RJDBC, this method does **not** support executing stored procs
     # or precompiled statements as these do not appear to be explicitly
@@ -159,14 +159,27 @@ setMethod("dbSendQuery", c("SQLServerConnection", "character"),
     # to return ResultSet objects. To execute data definition or manipulation
     # commands such as CREATE TABLE or UPDATE, use dbExecute instead.
     assertthat::assert_that(assertthat::is.string(statement))
-    stat <- create_statement(conn)
-    catch_exception(stat, "Unable to create simple JDBC statement ", statement)
-    jr <- execute_query(stat, statement)
-    catch_exception(jr, "Unable to retrieve JDBC result set for ", statement)
-    md <- rs_metadata(jr, FALSE)
-    catch_exception(md, "Unable to retrieve JDBC result set meta data for ",
-      statement, " in dbSendQuery")
-    new("SQLServerResult", jr = jr, md = md, stat = stat, pull = rJava::.jnull())
+    ps <- create_prepared_statement(conn, statement)
+    catch_exception(ps, "Unable to create prepared statement ", statement)
+    rs <- new("SQLServerResult", stat = ps)
+    # If parameterised and don't have params supplied, create a skeleton
+    # Result otherwise, create full thing
+    if (is_parameterised(ps) && is.null(params)) {
+      return(rs)
+    } else {
+      if (!is.null(params)) {
+        return(dbBind(rs, params))
+      } else {
+        jr <- execute_query(rs@stat)
+        catch_exception(jr, "Unable to retrieve result set for ", statement)
+        rs@jr <- jr
+        md <- rs_metadata(rs@jr, FALSE)
+        catch_exception(md, "Unable to retrieve result set meta data for ",
+          statement, " in dbSendQuery")
+        rs@md <- md
+        return(rs)
+      }
+    }
 })
 
 #' @rdname SQLServerConnection-class
@@ -435,6 +448,19 @@ setMethod("fetch", c("SQLServerResult", "numeric"),
     # Based on:
     # https://github.com/s-u/RJDBC/blob/1b7ccd4677ea49a93d909d476acf34330275b9ad/R/class.R#L287
     assertthat::assert_that(assertthat::is.count(block))
+
+    # If res is skeleton due to it being created by a parameterised query,
+    # then we first need to get the ResultSet assuming paramaters have been
+    # bound
+    if (is_parameterised(res@stat)) {
+      jr <- execute_query(res@stat)
+      catch_exception(jr, "Unable to retrieve result set for ", statement)
+      res@jr <- jr
+      md <- rs_metadata(res@jr, FALSE)
+      catch_exception(md, "Unable to retrieve result set meta data for ",
+        statement, " in dbSendQuery")
+      res@md <- md
+    }
 
     ###### Initialise JVM side cache of results
     rp <- res@pull

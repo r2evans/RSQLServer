@@ -5,6 +5,7 @@
 This package no longer depends on RJDBC. As such a number of user visible changes have been made:
 
 - `dbSendQuery()` only executes `SELECT` commands (queries) which return a result and not other arbitrary SQL code. See [rstats-db/DBI#20](https://github.com/rstats-db/DBI/issues/20). It also no longer supports calling stored procedures (callable statements) or prepared statements as these do not seem to be explicitly supported by any other DBI backend.
+- `dbSendQuery()` can execute parameterised queries. See `?DBI:dbBind` for more details on parameterised queries.
 - `dbSendUpdate()` which was based on RJDBC's method and which executes SQL commands that do not return a result will be deprecated in favour of the more descriptive `dbExecute()` which has been implemented upstream in DBI. See [rstats-db/DBI#20](https://github.com/rstats-db/DBI/issues/20). Unlike RJDBC's `dbSendUpdate()`, `dbExecute()` does not yet support calling stored procedures as these do not seem to be explicitly supported by any other DBI backend.
 - Implemented `dbUnloadDriver()` which returns `TRUE` in all instances rather than `FALSE` as was the case in RJDBC.
 

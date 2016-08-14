@@ -28,7 +28,8 @@
 
 \S4method{dbDisconnect}{SQLServerConnection}(conn, ...)
 
-\S4method{dbSendQuery}{SQLServerConnection,character}(conn, statement, ...)
+\S4method{dbSendQuery}{SQLServerConnection,character}(conn, statement,
+  params = NULL, ...)
 
 \S4method{dbSendStatement}{SQLServerConnection,character}(conn, statement,
   params = NULL, ...)

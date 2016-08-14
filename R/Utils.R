@@ -197,7 +197,7 @@ ps_bind <- function(i, param, ps) {
     ps_bind_dte(i, param, ps)
   } else if (inherits(param, "POSIXct")) {
     ps_bind_tme(i, param, ps)
-  } else if (is.raw(v)) {
+  } else if (is.raw(param)) {
     ps_bind_raw(i, param, ps)
   } else {
     ps_bind_str(i, param, ps)
@@ -245,6 +245,11 @@ ps_bind_raw <- function(i, param, ps) {
 
 ps_bind_str <- function(i, param, ps) {
   rJava::.jcall(ps, "V", "setString", i, as.character(param))
+}
+
+is_parameterised <- function(ps) {
+  md <- rJava::.jcall(ps, "Ljava/sql/ParameterMetaData;", "getParameterMetaData")
+  rJava::.jcall(md, "I", "getParameterCount") > 0
 }
 
 # SQL types --------------------------------------------------------------

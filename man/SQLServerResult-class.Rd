@@ -4,6 +4,7 @@
 \name{SQLServerResult-class}
 \alias{SQLServerResult-class}
 \alias{SQLServerUpdateResult-class}
+\alias{dbBind,SQLServerResult-method}
 \alias{dbClearResult,SQLServerResult-method}
 \alias{dbColumnInfo,SQLServerResult-method}
 \alias{dbFetch,SQLServerResult,numeric-method}
@@ -37,6 +38,8 @@
 \S4method{dbGetRowsAffected}{SQLServerUpdateResult}(res, ...)
 
 \S4method{dbHasCompleted}{SQLServerResult}(res, ...)
+
+\S4method{dbBind}{SQLServerResult}(res, params, ...)
 }
 \description{
 The \code{SQLServerResult} class extends the \code{DBIResult} class, while
