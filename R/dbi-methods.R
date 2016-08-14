@@ -179,6 +179,8 @@ setMethod("dbSendStatement", c("SQLServerConnection", "character"),
     catch_exception(stat, "Unable to create prepared statement ", statement)
     res <- execute_update(stat)
     catch_exception(res, "Unable to execute update ", statement)
+    # Need to return a DBIResult rather than integer which is what JDBC's
+    # executeUpdate method returns
     dbSendQuery(conn, paste("SELECT", res, "AS ROW_AFFECTED"))
 })
 
