@@ -436,6 +436,20 @@ setMethod ('dbIsValid', 'SQLServerResult', function (dbObj) {
 
 #' @rdname SQLServerResult-class
 #' @export
+setMethod("dbFetch", c("SQLServerPreResult", "numeric"),
+  def = function (res, n, ...) {
+    fetch(res, n, ...)
+})
+
+#' @rdname SQLServerResult-class
+#' @export
+setMethod("fetch", c("SQLServerPreResult", "numeric"),
+  function(res, n, ...) {
+    stop("Fetching from a SQLServerPreResult is not permitted. You ",
+      "probably need to bind values to a parameterised statement before ",
+      "being able to fetch a result.", call. = FALSE)
+})
+
 setMethod("dbFetch", c("SQLServerResult", "numeric"),
   def = function (res, n, ...) {
     fetch(res, n, ...)
