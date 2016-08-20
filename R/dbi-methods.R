@@ -454,11 +454,11 @@ setMethod("fetch", c("SQLServerResult", "numeric"),
     # bound
     if (is_parameterised(res@stat)) {
       jr <- execute_query(res@stat)
-      catch_exception(jr, "Unable to retrieve result set for ", statement)
+      catch_exception(jr, "Unable to retrieve result set for ", res@stat)
       res@jr <- jr
       md <- rs_metadata(res@jr, FALSE)
       catch_exception(md, "Unable to retrieve result set meta data for ",
-        statement, " in dbSendQuery")
+        res@stat, " in dbSendQuery")
       res@md <- md
     }
 
