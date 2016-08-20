@@ -43,7 +43,7 @@ setClass ("SQLServerPreResult", contains = 'DBIResult',
 #' @rdname SQLServerResult-class
 #' @export
 
-setClass ("SQLServerResult", contains = 'SQLServerResult',
+setClass ("SQLServerResult", contains = 'SQLServerPreResult',
   slots = c(jr = "jobjRef", md = "jobjRef", pull = "jobjRef"))
 
 #' @keywords internal
