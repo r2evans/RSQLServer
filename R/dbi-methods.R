@@ -172,7 +172,7 @@ setMethod("dbSendQuery", c("SQLServerConnection", "character"),
       } else {
         jr <- execute_query(pre_res@stat)
         catch_exception(jr, "Unable to retrieve result set for ", statement)
-        md <- rs_metadata(pre_res@jr, FALSE)
+        md <- rs_metadata(jr, FALSE)
         catch_exception(md, "Unable to retrieve result set meta data for ",
           statement, " in dbSendQuery")
         return(new("SQLServerResult", pre_res, jr = jr, md = md))
