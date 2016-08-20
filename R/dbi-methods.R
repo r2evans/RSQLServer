@@ -161,23 +161,21 @@ setMethod("dbSendQuery", c("SQLServerConnection", "character"),
     assertthat::assert_that(assertthat::is.string(statement))
     ps <- create_prepared_statement(conn, statement)
     catch_exception(ps, "Unable to create prepared statement ", statement)
-    rs <- new("SQLServerResult", stat = ps)
+    pre_res <- new("SQLServerPreResult", stat = ps)
     # If parameterised and don't have params supplied, create a skeleton
     # Result otherwise, create full thing
     if (is_parameterised(ps) && is.null(params)) {
-      return(rs)
+      return(pre_res)
     } else {
       if (!is.null(params)) {
-        return(dbBind(rs, params))
+        return(dbBind(pre_res, params))
       } else {
-        jr <- execute_query(rs@stat)
+        jr <- execute_query(pre_res@stat)
         catch_exception(jr, "Unable to retrieve result set for ", statement)
-        rs@jr <- jr
-        md <- rs_metadata(rs@jr, FALSE)
+        md <- rs_metadata(pre_res@jr, FALSE)
         catch_exception(md, "Unable to retrieve result set meta data for ",
           statement, " in dbSendQuery")
-        rs@md <- md
-        return(rs)
+        return(new("SQLServerResult", pre_res, jr = jr, md = md))
       }
     }
 })
@@ -450,6 +448,23 @@ setMethod("fetch", c("SQLServerPreResult", "numeric"),
       "being able to fetch a result.", call. = FALSE)
 })
 
+#' @rdname SQLServerResult-class
+#' @export
+setMethod("dbBind", "SQLServerPreResult", function(res, params, ...) {
+  res <- purrr::walk2(seq_along(params), params, rs_bind, res)
+  # If res is skeleton due to it being created by a parameterised query,
+  # then we first need to get the ResultSet assuming paramaters have been
+  # bound
+  jr <- execute_query(res@stat)
+  catch_exception(jr, "Unable to retrieve result set for ", res@stat)
+  md <- rs_metadata(res@jr, FALSE)
+  catch_exception(md, "Unable to retrieve result set meta data for ",
+    res@stat, " in dbSendQuery")
+  new("SQLServerResult", res, jr = jr, md = md)
+})
+
+#' @rdname SQLServerResult-class
+#' @export
 setMethod("dbFetch", c("SQLServerResult", "numeric"),
   def = function (res, n, ...) {
     fetch(res, n, ...)
@@ -462,19 +477,6 @@ setMethod("fetch", c("SQLServerResult", "numeric"),
     # Based on:
     # https://github.com/s-u/RJDBC/blob/1b7ccd4677ea49a93d909d476acf34330275b9ad/R/class.R#L287
     assertthat::assert_that(assertthat::is.count(block))
-
-    # If res is skeleton due to it being created by a parameterised query,
-    # then we first need to get the ResultSet assuming paramaters have been
-    # bound
-    if (is_parameterised(res@stat)) {
-      jr <- execute_query(res@stat)
-      catch_exception(jr, "Unable to retrieve result set for ", res@stat)
-      res@jr <- jr
-      md <- rs_metadata(res@jr, FALSE)
-      catch_exception(md, "Unable to retrieve result set meta data for ",
-        res@stat, " in dbSendQuery")
-      res@md <- md
-    }
 
     ###### Initialise JVM side cache of results
     rp <- res@pull
@@ -603,12 +605,6 @@ setMethod("dbHasCompleted", "SQLServerResult", function(res, ...) {
   # If res is empty (row = 0), isAfterLast() will return FALSE, but
   # dbGetRowCount will return 0L.
   rJava::.jcall(res@jr, "Z", "isAfterLast") || dbGetRowCount(res) == 0L
-})
-
-#' @rdname SQLServerResult-class
-#' @export
-setMethod("dbBind", "SQLServerResult", function(res, params, ...) {
-  purrr::walk2(seq_along(params), params, rs_bind, res)
 })
 
 # Inherited from DBI:

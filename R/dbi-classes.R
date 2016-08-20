@@ -36,10 +36,19 @@ setClass("SQLServerConnection", contains = 'DBIConnection',
 #' @keywords internal
 #' @export
 
-setClass ("SQLServerResult", contains = 'DBIResult',
-  slots = c(jr = "jobjRef", md = "jobjRef", stat = "jobjRef", pull = "jobjRef"))
+setClass ("SQLServerPreResult", contains = 'DBIResult',
+  slots = c(stat = "jobjRef"))
 
 #' @keywords internal
 #' @rdname SQLServerResult-class
 #' @export
+
+setClass ("SQLServerResult", contains = 'SQLServerResult',
+  slots = c(jr = "jobjRef", md = "jobjRef", pull = "jobjRef"))
+
+#' @keywords internal
+#' @rdname SQLServerResult-class
+#' @export
+
 setClass ("SQLServerUpdateResult", contains = 'SQLServerResult')
+
