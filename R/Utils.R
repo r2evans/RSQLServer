@@ -177,6 +177,12 @@ rp_to_r_type_map <- function (ctypes) {
   names(rp_to_r)[match(ctypes, rp_to_r)]
 }
 
+create_empty_lst <- function (types, names, n = 0L) {
+  assertthat::assert_that(length(types) == length(names),
+    n == 0L || assertthat::is.count(n))
+  purrr::map(types, vector, length = n) %>%
+    purrr::set_names(names)
+}
 
 # Bindings ----------------------------------------------------------------
 

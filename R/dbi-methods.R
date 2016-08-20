@@ -513,14 +513,6 @@ setMethod("fetch", c("SQLServerResult", "numeric"),
     out
 })
 
-create_empty_lst <- function (types, names, n = 0L) {
-  assertthat::assert_that(length(types) == length(names),
-    n == 0L || assertthat::is.count(n))
-  purrr::map(types, vector, length = n) %>%
-    purrr::set_names(names)
-}
-
-
 #' @rdname SQLServerResult-class
 #' @importFrom dplyr data_frame
 #' @export
