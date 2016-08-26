@@ -530,21 +530,24 @@ setMethod("fetch", c("SQLServerResult", "numeric"),
 })
 
 #' @rdname SQLServerResult-class
-#' @importFrom dplyr data_frame
+#' @importFrom dplyr bind_rows data_frame
 #' @export
 setMethod("dbColumnInfo", "SQLServerResult", def = function (res, ...) {
   # Inspired by RJDBC method for JDBCResult
   # https://github.com/s-u/RJDBC/blob/1b7ccd4677ea49a93d909d476acf34330275b9ad/R/class.R
   cols <- rJava::.jcall(res@md, "I", "getColumnCount")
-  df <- data_frame(field.name = character(),
-    field.type = character(),
-    data.type = character())
-  if (cols < 1) return(df)
-  for (i in 1:cols) {
-    df$field.name[i] <- rJava::.jcall(res@md, "S", "getColumnName", i)
-    df$field.type[i] <- rJava::.jcall(res@md, "S", "getColumnTypeName", i)
-    ct <- rJava::.jcall(res@md, "I", "getColumnType", i)
-    df$data.type[i] <- jdbcToRType(ct)
+  if (cols < 1L) {
+    df <- data_frame(field.name = character(),
+                     field.type = character(),
+                     data.type = character())
+  } else {
+    df <- dplyr::bind_rows(
+      lapply(seq_len(cols), function(i) {
+        list(field.name = rJava::.jcall(res@md, "S", "getColumnName", i),
+             field.type = rJava::.jcall(res@md, "S", "getColumnTypeName", i),
+             data.type = jdbcToRType(rJava::.jcall(res@md, "I", "getColumnType", i)))
+      })
+    )
   }
   df
 })
