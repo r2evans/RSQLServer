@@ -50,6 +50,7 @@ SQL Server (#75)
 - Arguments of `dbConnect()` are now `NULL` where other default values were assigned. This does not change the behaviour of the method.
 - Introduced `pattern` argument to `dbListTables()` which allows you to list all tables matching a pattern.
 - `dbExistsTable()` now passed table name to `dbListTables()` as a pattern to be matched which should improve its performance.
+- `dbColumnInfo()` succeeds in running (#96, @r2evans)
 - `dbGetInfo()` for `SQLServerResult` has been deprecated and calls the DBI default method which calls `dbHasCompleted()`, `dbGetRowCount()` etc. The latter methods have been implemented for `SQLServerResult` and are exported.
 - `as.numeric()` and `as.character()` calls now cast scalar input values to SQL types `FLOAT` and `NVARCHAR(4000)` respectively rather than `NUMERIC` and `TEXT` respectively (default in dplyr). 
 - `dbIsValid()` implemented for `SQLServerDriver` and always returns `TRUE`.
