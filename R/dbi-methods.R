@@ -443,24 +443,18 @@ setMethod("dbFetch", c("SQLServerPreResult", "numeric"),
 #' @export
 setMethod("fetch", c("SQLServerPreResult", "numeric"),
   function(res, n, ...) {
-    stop("Fetching from a SQLServerPreResult is not permitted. You ",
-      "probably need to bind values to a parameterised statement before ",
-      "being able to fetch a result.", call. = FALSE)
+    jr <- execute_query(res@stat)
+    catch_exception(jr, "Unable to retrieve result set for ", res@stat)
+    md <- rs_metadata(jr, FALSE)
+    catch_exception(md, "Unable to retrieve result set meta data for ",
+      res@stat, " in dbSendQuery")
+    fetch(new("SQLServerResult", res, jr = jr, md = md), n)
 })
 
 #' @rdname SQLServerResult-class
 #' @export
 setMethod("dbBind", "SQLServerPreResult", function(res, params, ...) {
-  res <- purrr::walk2(seq_along(params), params, rs_bind, res)
-  # If res is skeleton due to it being created by a parameterised query,
-  # then we first need to get the ResultSet assuming paramaters have been
-  # bound
-  jr <- execute_query(res@stat)
-  catch_exception(jr, "Unable to retrieve result set for ", res@stat)
-  md <- rs_metadata(res@jr, FALSE)
-  catch_exception(md, "Unable to retrieve result set meta data for ",
-    res@stat, " in dbSendQuery")
-  new("SQLServerResult", res, jr = jr, md = md)
+  purrr::walk2(seq_along(params), params, rs_bind, res)
 })
 
 #' @rdname SQLServerResult-class
