@@ -421,6 +421,51 @@ setMethod("dbGetException", "SQLServerConnection", def = function(conn, ...) {
   list()
 })
 
+setMethod("sqlAppendTable", "SQLServerConnection",
+  function(con, table, values, row.names = NA, ...) {
+    stopifnot(is.data.frame(values))
+
+    sql_values <- sqlData(con, values, row.names)
+
+    rows <- do.call(paste, c(sql_values, sep = ", "))
+    table <- dbQuoteIdentifier(con, table)
+    fields <- dbQuoteIdentifier(con, names(sql_values))
+
+    SQL(paste0(
+      "INSERT INTO ", table, "\n",
+      "  (", paste(fields, collapse = ", "), ")\n",
+      "VALUES\n",
+      paste0("  (", rows, ")", collapse = ",\n")
+    ))
+  }
+)
+
+setMethod("sqlData", "SQLServerConnection", function(con, value, row.names = NA, ...) {
+  value <- sqlRownamesToColumn(value, row.names = row.names)
+
+  is_logical <- vapply(value, is.logical, logical(1))
+  is_factor <- vapply(value, is.factor, logical(1))
+  is_char <- vapply(value, is.character, logical(1))
+
+  # convert logicals to 0/1, sqlserver accepts 'true' or 'false'
+  value[is_logical] <- lapply(value[is_logical], function(s) {
+    ifelse(is.na(s), "NULL", sQuote(tolower(as.character(s))))
+  })
+
+  # # convert factors to strings
+  value[is_factor] <- lapply(value[is_factor], as.character)
+
+  # convert all strings to quoted utf-8
+  value[is_factor | is_char] <- lapply(value[is_factor | is_char], function(s) {
+    ifelse(is.na(s), "NULL", sQuote(enc2utf8(s)))
+  })
+
+  # convert all remaining NA's to "NULL"
+  value[] <- lapply(value, as.character)
+  value[is.na(value)] <- "NULL"
+
+  value
+})
 
 # Inherited from DBI:
 # show()

@@ -56,6 +56,7 @@ SQL Server (#75)
 - `dbIsValid()` implemented for `SQLServerDriver` and always returns `TRUE`.
 - Now rely on DBI supplied `show()` methods
 - Added Travis-CI support
+- added `sqlData()` and `sqlAppendTable()` methods
 
 # Version 0.2.0
 
