@@ -453,7 +453,7 @@ setMethod("fetch", c("SQLServerPreResult", "numeric"),
 #' @rdname SQLServerResult-class
 #' @export
 setMethod("dbBind", "SQLServerPreResult", function(res, params, ...) {
-  purrr::walk2(seq_along(params), params, rs_bind, res)
+  rs_bind_all(params, res)
 })
 
 #' @rdname SQLServerResult-class
@@ -573,7 +573,7 @@ setMethod("dbClearResult", "SQLServerResult", function (res, ...) {
 #' @rdname SQLServerResult-class
 #' @export
 setMethod("dbGetStatement", "SQLServerResult", function(res, ...) {
-  res@stat
+  rJava::.jcall(res@stat, "S", "toString")
 })
 
 #' @rdname SQLServerResult-class

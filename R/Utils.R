@@ -186,8 +186,12 @@ create_empty_lst <- function (types, names, n = 0L) {
 
 # Bindings ----------------------------------------------------------------
 
-rs_bind <- function(i, param, rs) {
-  ps_bind(i, param, rs@stat)
+rs_bind_all <- function(params, rs) {
+  ps_bind_all(params, rs@stat)
+}
+
+ps_bind_all <- function(params, ps) {
+  purrr::walk2(seq_along(params), params, ps_bind, ps)
 }
 
 ps_bind <- function(i, param, ps) {
