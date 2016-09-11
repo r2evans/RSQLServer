@@ -184,15 +184,20 @@ setMethod("dbSendQuery", c("SQLServerConnection", "character"),
 
 setMethod("dbSendStatement", c("SQLServerConnection", "character"),
   function(conn, statement, params = NULL, ...) {
-    assertthat::assert_that(assertthat::is.string(statement))
-    stat <- create_prepared_statement(conn, statement)
-    catch_exception(stat, "Unable to create prepared statement ", statement)
-    res <- execute_update(stat)
-    catch_exception(res, "Unable to execute update ", statement)
-    # Need to return a DBIResult rather than integer which is what JDBC's
-    # executeUpdate method returns
-    new("SQLServerUpdateResult",
-      dbSendQuery(conn, paste("SELECT", res, "AS ROWS_AFFECTED")))
+    assertthat::assert_that(assertthat::is.string(statement),
+      is.null(params) || is.list(params))
+    ps <- create_prepared_statement(conn, statement)
+    catch_exception(ps, "Unable to create prepared statement ", statement)
+    if (is_parameterised(ps)) {
+      ps_bind_all(params, ps)
+    }
+    res <- execute_update(ps)
+    catch_exception(res, "Unable to send statement ", statement)
+    # Returns SQLServerUpdateResult.
+    # TODO: interpolate parameters into statement before printing. Be more
+    #       useful
+    hack_qry <- paste("SELECT", res, "AS ROWS_AFFECTED")
+    new("SQLServerUpdateResult", dbSendQuery(conn, hack_qry))
 })
 
 #' @rdname SQLServerConnection-class
