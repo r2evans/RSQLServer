@@ -9,7 +9,7 @@ vars <- data.frame(
                 "integer", "numeric", "logical"),
   stringsAsFactors = FALSE
 )
-chrs <- c("char1", "123", NA)
+chrs <- c("char'1", "123", NA)
 nums <- c(pi, 2*pi, NA)
 lgls <- c(TRUE, FALSE, NA)
 
@@ -61,12 +61,12 @@ if (have_test_server("sqlserver")) {
 
     tblname <- "testtable"
 
-    qry <- SQL(gsub("key null", "key not null", paste0(
+    qry <- SQL(paste0(
       "CREATE TABLE ", tblname, " (\n  ",
       "id UNIQUEIDENTIFIER DEFAULT NEWSEQUENTIALID(),\n  ",
       paste(vars$names, vars$sqltypes, sep = " ", collapse = " null,\n  "),
       "\n)"
-    )))
+    ))
 
     
     test_that("'create table' works", {

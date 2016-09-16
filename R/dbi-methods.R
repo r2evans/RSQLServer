@@ -457,7 +457,7 @@ setMethod("sqlData", "SQLServerConnection", function(con, value, row.names = NA,
 
   # convert all strings to quoted utf-8
   value[is_factor | is_char] <- lapply(value[is_factor | is_char], function(s) {
-    ifelse(is.na(s), "NULL", sQuote(enc2utf8(s)))
+    ifelse(is.na(s), "NULL", dbQuoteString(con, enc2utf8(s)))
   })
 
   # convert all remaining NA's to "NULL"
