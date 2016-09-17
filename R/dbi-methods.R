@@ -186,23 +186,21 @@ setMethod("dbSendStatement", c("SQLServerConnection", "character"),
   function(conn, statement, params = NULL, ...) {
     assertthat::assert_that(assertthat::is.string(statement),
       is.null(params) || is.list(params))
-    ps <- create_prepared_statement(conn, statement)
-    catch_exception(ps, "Unable to create prepared statement ", statement)
-    if (is_parameterised(ps)) {
-      ps_bind_all(params, ps)
+    if(!is.null(params)) {
+      s <- create_prepared_statement(conn, statement)
+      catch_exception(s, "Unable to create prepared statement ", statement)
+      on.exit(close_statement(s))
+      ps_bind_all(params, s)
+      res <- execute_update(s, check = TRUE)
+    } else {
+      s <- create_statement(conn)
+      catch_exception(s, "Unable to create statement ", statement)
+      on.exit(close_statement(s))
+      res <- execute_update(s, statement, check = TRUE)
     }
-    res <- execute_update(ps)
-    catch_exception(res, "Unable to send statement ", statement)
-    # Returns SQLServerUpdateResult.
-    # TODO: interpolate parameters into statement before printing. Be more
-    #       useful
-    hack_qry <- paste("SELECT", res, "AS ROWS_AFFECTED")
-    new("SQLServerUpdateResult", dbSendQuery(conn, hack_qry))
+    res <- dbSendQuery(conn, paste("SELECT", res, "AS ROWS_AFFECTED"))
+    new("SQLServerUpdateResult", res)
 })
-
-  }
-)
-
 
 #' @rdname SQLServerConnection-class
 #' @export
