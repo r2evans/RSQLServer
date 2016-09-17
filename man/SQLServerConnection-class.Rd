@@ -7,7 +7,6 @@
 \alias{dbCommit,SQLServerConnection-method}
 \alias{dbDataType,SQLServerConnection-method}
 \alias{dbDisconnect,SQLServerConnection-method}
-\alias{dbExecute,SQLServerConnection,character-method}
 \alias{dbExistsTable,SQLServerConnection-method}
 \alias{dbGetInfo,SQLServerConnection-method}
 \alias{dbIsValid,SQLServerConnection-method}
@@ -33,9 +32,6 @@
 
 \S4method{dbSendStatement}{SQLServerConnection,character}(conn, statement,
   params = NULL, ...)
-
-\S4method{dbExecute}{SQLServerConnection,character}(conn, statement, ...,
-  list = NULL)
 
 dbSendUpdate(conn, statement, ...)
 
