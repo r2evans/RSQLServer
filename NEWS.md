@@ -4,9 +4,10 @@
 
 This package no longer depends on RJDBC. As such a number of user visible changes have been made:
 
-- `dbSendQuery()` only executes `SELECT` commands (queries) which return a result and not other arbitrary SQL code. See [rstats-db/DBI#20](https://github.com/rstats-db/DBI/issues/20). It also no longer supports calling stored procedures (callable statements) or prepared statements as these do not seem to be explicitly supported by any other DBI backend.
+- `dbSendQuery()` only executes queries rather than other arbitrary SQL statements. See [rstats-db/DBI#20](https://github.com/rstats-db/DBI/issues/20). It also no longer supports calling stored procedures (callable statements).
 - `dbSendQuery()` can execute parameterised queries. See `?DBI:dbBind` for more details on parameterised queries.
-- `dbSendUpdate()` which was based on RJDBC's method and which executes SQL commands that do not return a result will be deprecated in favour of the more descriptive `dbExecute()` which has been implemented upstream in DBI. See [rstats-db/DBI#20](https://github.com/rstats-db/DBI/issues/20). Unlike RJDBC's `dbSendUpdate()`, `dbExecute()` does not yet support calling stored procedures as these do not seem to be explicitly supported by any other DBI backend.
+- `dbSendUpdate()` which was based on RJDBC's method and which executes non-query SQL statements will be deprecated in favour of the more descriptive `dbExecute()` which has been implemented upstream in DBI (the latter of which calls `dbSendStatement()`. See [rstats-db/DBI#20](https://github.com/rstats-db/DBI/issues/20). Unlike RJDBC's `dbSendUpdate()`, `dbExecute()` does not yet support calling stored procedures as these do not seem to be explicitly supported by any other DBI backend. 
+- `dbExecute()` arguments have been changed to reflect the DBI generic.
 - Implemented `dbUnloadDriver()` which returns `TRUE` in all instances rather than `FALSE` as was the case in RJDBC.
 
 A number of previously imported RJDBC methods have now been reimplemented in this package with no user visible changes.
